@@ -1,38 +1,28 @@
-import fetch from "node-fetch";
-
-// Interface para o resultado
+// Tipagem
 interface SiteStatus {
   site: string;
-  status: number | null;
-  ok: boolean;
-  message?: string;
+  status: number | null; 
 }
 
-// Função que verifica os sites
+// Função 
 async function verificarSites(sites: string[]): Promise<SiteStatus[]> {
-  return Promise.all(
-    sites.map(async (site) => {
-      try {
-        const res = await fetch(site);
-        return { site, status: res.status, ok: res.ok };
-      } catch (e) {
-        return {
-          site,
-          status: null,
-          ok: false,
-          message: e instanceof Error ? e.message : "Erro desconhecido",
-        };
-      }
-    })
-  );
+  const promessas = sites.map(async (site) => {
+    try {
+      const res = await fetch(site);
+      return { site, status: res.status };
+    } catch {
+      return { site, status: null }; 
+    }
+  });
+
+  return Promise.all(promessas);
 }
 
-// Exemplo de uso
-(async () => {
-  const sites = ["https://www.google.com", "https://www.github.com", "https://umsitequenaoexiste.com.br"];
-  const resultados = await verificarSites(sites);
-
-  resultados.forEach((res) =>
-    console.log(`${res.site}: ${res.ok ? `✅ ${res.status}` : `❌ ${res.message}`}`)
-  );
-})();
+// Exemplo 
+const sites = ["https://www.google.com", "https://www.github.com", "https://umsitequenaoexiste.com.br"];
+verificarSites(sites).then(resultados => {
+  console.log("Status dos Sites:");
+  resultados.forEach(res => {
+    console.log(`${res.site}: ${res.status !== null ? res.status : "Erro"}`);
+  });
+});
